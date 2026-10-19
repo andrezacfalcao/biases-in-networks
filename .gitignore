@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+data/waterbirds_v1.0/archive.tar.gz
+results/waterbirds_resnet50_features.pt
+.DS_Store
+.matplotlib/
+*data/
+*jpg/
+*data/waterbirds_v1.0/
