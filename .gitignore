@@ -8,3 +8,8 @@ results/waterbirds_resnet50_features.pt
 *data/
 *jpg/
 *data/waterbirds_v1.0/
+# Código externo e execuções da reprodução
+/.upstream/
+/runs/
+
+/.venv-repro/

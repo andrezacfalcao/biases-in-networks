@@ -1,0 +1,7 @@
+# Instale torch==2.5.1 e torchvision==0.20.1 separadamente (veja o README).
+numpy==1.26.4
+pandas==2.2.3
+scikit-learn==1.5.2
+Pillow==11.0.0
+tensorboard==2.18.0
+tqdm==4.67.1

@@ -1,73 +1,24 @@
-# Viés em Redes Neurais: Redução de Atalhos e Correlações Espúrias no Dataset Waterbirds
+# Viés em redes neurais: correlações espúrias no Waterbirds
 
-Repositório com a implementação completa, notebook para Google Colab, apresentação em slides (.pptx) e resultados experimentais reais para o seminário acadêmico de Redes Neurais.
+Em Waterbirds, o fundo de água ou terra está associado à classe da ave no treino. O projeto mede quanto essa associação prejudica os quatro grupos no teste e verifica se retreinar a última camada com **Deep Feature Reweighting (DFR)** melhora a acurácia do pior grupo.
 
----
+- **Pessoa 1:** reproduzir ERM e DFR com ResNet-50 no Waterbirds, conforme a Tabela 2 de [Kirichenko et al., ICLR 2023](https://openreview.net/pdf/f0a7c2996eab5d56791cb5d7feebe23aa9ca27c4.pdf). Comece pelo [protocolo de reprodução](docs/REPRODUCAO_WATERBIRDS.md).
+- **Pessoa 2:** executar o mesmo protocolo nas outras quatro arquiteturas e comparar os resultados. Comece pela [entrega para a Pessoa 2](docs/ENTREGA_PESSOA_2.md).
+- **Estado:** o pipeline e o formato dos resultados estão no repositório. A confirmação numérica exige executar as cinco sementes em GPU NVIDIA/CUDA. Consulte a pasta `runs/` da execução para obter os resultados. As referências publicadas e os números do piloto não são resultados da reprodução.
 
-## 📁 Estrutura do Projeto
+## Verificar a preparação
 
-```
-biases-in-networks/
-│
-├── waterbirds_bias_reduction.ipynb      # Notebook Jupyter / Google Colab (pronto para rodar em GPU T4)
-├── seminario_vies_redes_neurais.pptx    # Apresentação completa em slides (13 slides, notas de orador, 3 apresentadores)
-│
-├── results/
-│   ├── waterbirds_model_comparison.csv       # Tabela de resultados reais (Avg Acc, WGA, Disparidade, 4 Grupos)
-│   ├── waterbirds_accuracy_comparison.png    # Gráfico de barras: Acurácia Média vs. Pior Grupo (WGA)
-│   ├── waterbirds_group_accuracies.png       # Gráfico detalhado de acurácia por grupo de teste
-│   ├── waterbirds_gradcam_comparison.png     # Mapas de atenção Grad-CAM (ERM vs. DFR)
-│   ├── waterbirds_gradcam_dual_minority.png  # Comparativo duplo de casos minoritários
-│   ├── waterbirds_groups_examples.png        # Exemplos visuais dos 4 grupos
-│   └── waterbirds_split_distribution.png     # Gráfico da distribuição de treino, validação e teste
-│
-├── scripts/
-│   ├── run_experiments.py              # Script de extração de features e treinamento dos modelos
-│   ├── generate_gradcam.py             # Script de geração dos mapas de saliência Grad-CAM
-│   ├── generate_dataset_overview.py    # Visualizações do dataset
-│   ├── create_notebook.py              # Gerador do notebook Colab
-│   └── create_presentation.py          # Gerador da apresentação .pptx
-│
-└── data/
-    └── waterbirds_v1.0/                # Dataset oficial Waterbirds (metadados e imagens)
+Na raiz do repositório, com Python 3.11 ou 3.12, Git e o Waterbirds v1.0 extraído:
+
+```sh
+# Só se ainda não houver o checkout dos autores:
+git clone https://github.com/PolinaKirichenko/deep_feature_reweighting.git .upstream/deep_feature_reweighting
+python -m reproduction check
+python -m unittest discover -s tests -v
 ```
 
----
+O comando `check` não exige GPU ou PyTorch. Verifica as divisões, a presença das imagens e se a adaptação se aplica à revisão fixada do código dos autores. Para instalar o ambiente e executar `python -m reproduction run`, siga o [protocolo](docs/REPRODUCAO_WATERBIRDS.md).
 
-## 📊 Resultados Empíricos Obtidos no Teste (5.794 Imagens)
+## Material do piloto
 
-Espinha dorsal: **ResNet-50** pré-treinada na ImageNet-1K ($d = 2048$).
-
-| Método | Acurácia Média (Avg Acc) | Pior Grupo (Worst-Group Acc - WGA) | Disparidade (Max - Min) | G0: Terra/Terra (Maioria) | G1: Terra/Água (Minoria) | G2: Água/Terra (Minoria Crítica) | G3: Água/Água (Maioria) |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **ERM (Padrão)** | 87.88% | **67.45%** | **32.11%** | 99.56% | 80.31% | **67.45%** | 93.93% |
-| **Re-weighting (Treino)** | 89.77% | **74.30%** | **24.02%** | 98.31% | 84.66% | **74.30%** | 93.15% |
-| **DFR (Kirichenko et al.)** | **90.82%** | **89.56%** | **3.03%** | 92.59% | 89.62% | **89.56%** | 90.03% |
-| **JTT (Liu et al.)** | 87.50% | **66.36%** | **32.89%** | 99.25% | 79.96% | **66.36%** | 93.93% |
-
----
-
-## 🚀 Como Executar
-
-### Opção 1: Google Colab
-1. Abra o arquivo [`waterbirds_bias_reduction.ipynb`](waterbirds_bias_reduction.ipynb) no Google Colab.
-2. Em *Ambiente de Execução* -> *Alterar tipo de ambiente de execução*, selecione **GPU T4**.
-3. Execute todas as células em sequência. O download e treinamento levarão de 3 a 5 minutos.
-
-### Opção 2: Localmente
-```bash
-python3.12 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt # ou pip install torch torchvision wilds scikit-learn matplotlib seaborn pillow python-pptx
-python scripts/run_experiments.py
-python scripts/generate_gradcam.py
-```
-
----
-
-## 📚 Referências Auditadas
-1. **Sagawa et al. (ICLR 2020)**: *Distributionally Robust Neural Networks for Group Shifts: On the Importance of Regularization for Worst-Case Generalization.*
-2. **Kirichenko et al. (NeurIPS 2022)**: *Last Layer Re-Training is Sufficient for Robustness (DFR).*
-3. **Geirhos et al. (Nature Machine Intelligence 2020)**: *Shortcut learning in deep neural networks.*
-4. **Liu et al. (ICML 2021)**: *Just Train Twice: Improving Group Robustness without Attribute Annotations (JTT).*
-5. **Selvaraju et al. (ICCV 2017)**: *Grad-CAM: Visual Explanations from Deep Networks via Gradient-based Localization.*
+O [notebook](waterbirds_bias_reduction.ipynb), os [slides](seminario_vies_redes_neurais.pptx), o [relatório anterior](RELATORIO_COMPLETO_PROJETO.md) e os [resultados em CSV](results/waterbirds_model_comparison.csv) documentam um estudo exploratório com uma ResNet-50 congelada logo após o pré-treinamento no ImageNet. O piloto compara classificadores lineares com ERM, reponderação e adaptações de DFR e JTT; pode apoiar a apresentação do problema e dos mapas Grad-CAM. Os resultados do novo protocolo são gravados em outro diretório.

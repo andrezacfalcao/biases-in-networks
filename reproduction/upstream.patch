@@ -1,0 +1,225 @@
+diff --git a/dfr_evaluate_spurious.py b/dfr_evaluate_spurious.py
+index 5af70a4..84544e4 100644
+--- a/dfr_evaluate_spurious.py
++++ b/dfr_evaluate_spurious.py
+@@ -12,7 +12,7 @@ import sys
+ from collections import defaultdict
+ import json
+ from functools import partial
+-import pickle
++from waterbirds_models import MODEL_SPECS, make_model, get_embedding
+ 
+ from sklearn.linear_model import LogisticRegression
+ from sklearn.preprocessing import StandardScaler
+@@ -56,7 +56,11 @@ parser.add_argument(
+ parser.add_argument(
+     "--tune_class_weights_dfr_train", action='store_true',
+     help="Learn class weights for DFR(Train)")
++parser.add_argument("--architecture", choices=MODEL_SPECS, default="resnet50")
++parser.add_argument("--device", choices=("cuda", "cpu"), default="cuda")
++parser.add_argument("--seed", type=int, default=1)
+ args = parser.parse_args()
++set_seed(args.seed)
+ 
+ 
+ def dfr_on_validation_tune(
+@@ -319,7 +323,7 @@ valset = WaterBirdsDataset(
+     basedir=args.data_dir, split="val", transform=test_transform)
+ 
+ loader_kwargs = {'batch_size': args.batch_size,
+-                 'num_workers': 4, 'pin_memory': True,
++                 'num_workers': 4 if args.device == 'cuda' else 0, 'pin_memory': args.device == 'cuda',
+                  "reweight_places": None}
+ train_loader = get_loader(
+     trainset, train=True, reweight_groups=False, reweight_classes=False,
+@@ -333,13 +337,9 @@ val_loader = get_loader(
+ 
+ # Load model
+ n_classes = trainset.n_classes
+-model = torchvision.models.resnet50(pretrained=False)
+-d = model.fc.in_features
+-model.fc = torch.nn.Linear(d, n_classes)
+-model.load_state_dict(torch.load(
+-    args.ckpt_path
+-))
+-model.cuda()
++model = make_model(args.architecture, n_classes, pretrained=False)
++model.load_state_dict(torch.load(args.ckpt_path, map_location="cpu"))
++model.to(args.device)
+ model.eval()
+ 
+ # Evaluate model
+@@ -355,22 +355,6 @@ print()
+ model.eval()
+ 
+ # Extract embeddings
+-def get_embed(m, x):
+-    x = m.conv1(x)
+-    x = m.bn1(x)
+-    x = m.relu(x)
+-    x = m.maxpool(x)
+-
+-    x = m.layer1(x)
+-    x = m.layer2(x)
+-    x = m.layer3(x)
+-    x = m.layer4(x)
+-
+-    x = m.avgpool(x)
+-    x = torch.flatten(x, 1)
+-    return x
+-
+-
+ all_embeddings = {}
+ all_y, all_p, all_g = {}, {}, {}
+ for name, loader in [("train", train_loader), ("test", test_loader), ("val", val_loader)]:
+@@ -378,7 +362,7 @@ for name, loader in [("train", train_loader), ("test", test_loader), ("val", val
+     all_y[name], all_p[name], all_g[name] = [], [], []
+     for x, y, g, p in tqdm.tqdm(loader):
+         with torch.no_grad():
+-            all_embeddings[name].append(get_embed(model, x.cuda()).detach().cpu().numpy())
++            all_embeddings[name].append(get_embedding(model, x.to(args.device), args.architecture).detach().cpu().numpy())
+             all_y[name].append(y.detach().cpu().numpy())
+             all_g[name].append(g.detach().cpu().numpy())
+             all_p[name].append(p.detach().cpu().numpy())
+@@ -397,7 +381,7 @@ c, w1, w2 = dfr_on_validation_tune(
+ dfr_val_results["best_hypers"] = (c, w1, w2)
+ print("Hypers:", (c, w1, w2))
+ test_accs, test_mean_acc, train_accs = dfr_on_validation_eval(
+-        c, w1, w2, all_embeddings, all_y, all_g,
++        c, w1, w2, all_embeddings, all_y, all_g, num_retrains=10,
+     balance_val=args.balance_dfr_val, add_train=not args.notrain_dfr_val)
+ dfr_val_results["test_accs"] = test_accs
+ dfr_val_results["train_accs"] = train_accs
+@@ -406,29 +390,6 @@ dfr_val_results["test_mean_acc"] = test_mean_acc
+ print(dfr_val_results)
+ print()
+ 
+-# DFR on train subsampled
+-print("DFR on train subsampled")
+-dfr_train_results = {}
+-c, w1, w2 = dfr_train_subset_tune(
+-    all_embeddings, all_y, all_g,
+-    learn_class_weights=args.tune_class_weights_dfr_train)
+-dfr_train_results["best_hypers"] = (c, w1, w2)
+-print("Hypers:", (c, w1, w2))
+-test_accs, test_mean_acc, train_accs = dfr_train_subset_eval(
+-        c, w1, w2, all_embeddings, all_y, all_g)
+-dfr_train_results["test_accs"] = test_accs
+-dfr_train_results["train_accs"] = train_accs
+-dfr_train_results["test_worst_acc"] = np.min(test_accs)
+-dfr_train_results["test_mean_acc"] = test_mean_acc
+-print(dfr_train_results)
+-print()
+-
+-
+-all_results = {}
+-all_results["base_model_results"] = base_model_results
+-all_results["dfr_val_results"] = dfr_val_results
+-all_results["dfr_train_results"] = dfr_train_results
+-print(all_results)
+-
+-with open(args.result_path, 'wb') as f:
+-    pickle.dump(all_results, f)
+\ No newline at end of file
++with open(args.result_path, "w", encoding="utf-8") as f:
++    json.dump({"erm": base_model_results["test"], "dfr": dfr_val_results}, f,
++              default=lambda value: value.item(), allow_nan=False)
+diff --git a/train_classifier.py b/train_classifier.py
+index 2660bee..616a9b7 100644
+--- a/train_classifier.py
++++ b/train_classifier.py
+@@ -13,7 +13,7 @@ from functools import partial
+ 
+ from wb_data import WaterBirdsDataset, get_loader, get_transform_cub, log_data
+ 
+-from utils import MultiTaskHead
++from waterbirds_models import MODEL_SPECS, make_model
+ from utils import Logger, AverageMeter, set_seed, evaluate, get_y_p
+ from utils import update_dict, get_results, write_dict_to_tb
+ 
+@@ -40,6 +40,8 @@ parser.add_argument(
+     default="logs/",
+     help="Output directory")
+ 
++parser.add_argument("--architecture", choices=MODEL_SPECS, default="resnet50")
++parser.add_argument("--device", choices=("cuda", "cpu"), default="cuda")
+ parser.add_argument("--pretrained_model", action='store_true', help="Use pretrained model")
+ parser.add_argument("--reweight_classes", action='store_true', help="Reweight classes")
+ parser.add_argument("--reweight_places", action='store_true', help="Reweight based on place")
+@@ -96,7 +98,6 @@ test_transform = get_transform_cub(target_resolution=target_resolution, train=Fa
+ 
+ trainset = WaterBirdsDataset(basedir=basedir, split="train", transform=train_transform)
+ testset_dict = {
+-    'wb': WaterBirdsDataset(basedir=args.test_wb_dir, split="test", transform=test_transform),
+     'wb_val': WaterBirdsDataset(basedir=args.test_wb_dir, split="val", transform=test_transform),
+ }
+ 
+@@ -123,7 +124,7 @@ if args.num_minority_groups_remove > 0:
+ # testset = WaterBirdsDataset(basedir=basedir, split="test", transform=test_transform)
+ # valset = WaterBirdsDataset(basedir=basedir, split="val", transform=test_transform)
+ 
+-loader_kwargs = {'batch_size': args.batch_size, 'num_workers': 4, 'pin_memory': True}
++loader_kwargs = {'batch_size': args.batch_size, 'num_workers': 4 if args.device == 'cuda' else 0, 'pin_memory': args.device == 'cuda'}
+ train_loader = get_loader(
+     trainset, train=True, reweight_groups=args.reweight_groups,
+     reweight_classes=args.reweight_classes, reweight_places=args.reweight_places, **loader_kwargs)
+@@ -137,16 +138,12 @@ for test_name, testset_v in testset_dict.items():
+ #   testset, train=False, reweight_groups=None, reweight_classes=None, **loader_kwargs)
+ 
+ get_yp_func = partial(get_y_p, n_places=trainset.n_places)
+-log_data(logger, trainset, testset_dict['wb'], get_yp_func=get_yp_func)
+ 
+ # Model
+ n_classes = trainset.n_classes
+-model = torchvision.models.resnet50(pretrained=args.pretrained_model)
+-d = model.fc.in_features
+-if not args.multitask:
+-    model.fc = torch.nn.Linear(d, n_classes)
+-else:
+-    model.fc = MultiTaskHead(d, [n_classes, trainset.n_places])
++if args.multitask or args.predict_place or args.test_grey_dir or args.test_places_dir:
++    parser.error("This protocol supports only Waterbirds bird classification.")
++model = make_model(args.architecture, n_classes, args.pretrained_model)
+ 
+ # TODO: fix resuming from a checkpoint
+ if args.resume is not None:
+@@ -154,7 +151,7 @@ if args.resume is not None:
+     checkpoint = torch.load(args.resume)
+     model.load_state_dict(checkpoint)
+ 
+-model.cuda()
++model.to(args.device)
+ 
+ optimizer = torch.optim.SGD(
+     model.parameters(), lr=args.init_lr, momentum=args.momentum_decay, weight_decay=args.weight_decay)
+@@ -178,7 +175,7 @@ for epoch in range(args.num_epochs):
+ 
+     for batch in tqdm.tqdm(train_loader):
+         x, y, g, p = batch
+-        x, y, p = x.cuda(), y.cuda(), p.cuda()
++        x, y, p = x.to(args.device), y.to(args.device), p.to(args.device)
+         if args.predict_place:
+             y = p
+ 
+@@ -241,4 +238,6 @@ for epoch in range(args.num_epochs):
+ 
+     logger.write('\n')
+ 
+-torch.save(model.state_dict(), os.path.join(args.output_dir, 'final_checkpoint.pt'))
++final_checkpoint = os.path.join(args.output_dir, 'final_checkpoint.pt')
++torch.save(model.state_dict(), final_checkpoint + '.pending')
++os.replace(final_checkpoint + '.pending', final_checkpoint)
+diff --git a/utils.py b/utils.py
+index d22eb4d..932c231 100644
+--- a/utils.py
++++ b/utils.py
+@@ -110,7 +110,8 @@ def evaluate(model, loader, get_yp_func, multitask=False, predict_place=False):
+ 
+     with torch.no_grad():
+         for x, y, g, p in tqdm.tqdm(loader):
+-            x, y, p = x.cuda(), y.cuda(), p.cuda()
++            device = next(model.parameters()).device
++            x, y, p = x.to(device), y.to(device), p.to(device)
+             if predict_place:
+                 y = p
+ 

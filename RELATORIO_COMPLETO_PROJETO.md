@@ -1,4 +1,7 @@
 # 🦅 Relatório Completo: Viés e Correlações Espúrias em Redes Neurais
+
+> **Relatório do piloto.** Os resultados deste documento usam uma ResNet-50 congelada logo após o ImageNet. Para o experimento de reprodução e a comparação de arquiteturas, consulte o [protocolo](docs/REPRODUCAO_WATERBIRDS.md).
+
 ## Do Conceito Intuitivo à Formulação Matemática e Implementação Prática no Dataset Waterbirds
 
 > **Autores:** Grupo do Seminário de Redes Neurais Profundas  
@@ -93,7 +96,7 @@ A sigla **ERM** significa **Empirical Risk Minimization** (em português: **Mini
 
 #### E o que significa "Baseline ERM"? De onde ele veio?
 * Em ciência da computação, a palavra **Baseline** significa a **"linha de base"**, ou seja, o modelo padrão de referência com o qual você compara qualquer técnica nova para provar se a novidade realmente traz melhorias.
-* No nosso seminário, o **Baseline ERM** veio diretamente do artigo de **Sagawa et al. (ICLR 2020)**: os autores pegaram uma ResNet-50 pré-treinada e a treinaram no Waterbirds pelo método padrão de mercado (ERM). Esse modelo serve como o "paciente controle": ele atinge alta acurácia média (~88%), mas sofre um colapso catastrófico no pior grupo minoritário (~67%). É esse modelo vulnerável que as técnicas subsequentes (como o DFR) buscam superar.
+* O **Baseline ERM** deste piloto foi inspirado no protocolo de **Sagawa et al. (ICLR 2020)**. Aqui treinamos apenas um classificador linear sobre características fixas de uma ResNet-50 pré-treinada no ImageNet. Os valores de ~88% de acurácia média e ~67% no pior grupo são deste piloto.
 
 #### Formulação Matemática do ERM
 No aprendizado supervisionado padrão, operamos sob a hipótese de dados identicamente e independentemente distribuídos ($i.i.d.$) extraídos de uma distribuição $P(X, Y)$.
