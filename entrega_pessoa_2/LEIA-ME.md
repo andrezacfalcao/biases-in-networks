@@ -211,7 +211,10 @@ python scripts/plot_person2_results.py \
 
 Arquivos desta entrega:
 
-- `resultados/results_all.csv`: 40 linhas (4 arquiteturas × 2 métodos × 5 sementes).
+- `resultados/resultados_resumo.csv`: **tabela final**, uma linha por arquitetura e método (8 linhas), com pior grupo, média ponderada, micro, gap, grupo pior e efeito do DFR.
+- `resultados/resultados_completos.csv`: ERM e DFR lado a lado, uma linha por arquitetura (4 linhas, 32 colunas).
+- `resultados/resultados_por_semente.csv`: detalhe das 40 execuções (4 arquiteturas × 2 métodos × 5 sementes).
+- `resultados/results_all.csv`: a mesma base em formato longo, com nomes de coluna em inglês.
 - `resultados/summary_all.csv`: média, desvio e IC95 por arquitetura e método.
 - `resultados/deltas.csv`: efeito do DFR em cada semente.
 - `resultados/deltas_summary.csv`: resumo do efeito do DFR.

@@ -117,6 +117,124 @@ def write_csv(path, rows):
         writer.writerows(rows)
 
 
+def wide_rows(architectures, summaries, delta_rows, complete):
+    """Uma linha por arquitetura, com ERM e DFR lado a lado."""
+    index = {(row["architecture"], row["method"]): row for row in summaries}
+    wide = []
+    for architecture in architectures:
+        erm, dfr = index[architecture, "ERM"], index[architecture, "DFR"]
+        delta = delta_rows[architecture]["summary"]
+        runs = complete[architecture]
+
+        def worst_group(method):
+            counts = Counter(
+                GROUPS[min(range(4), key=lambda i: float(runs[method, seed][f"g{i}_accuracy_pct"]))]
+                for seed in SEEDS)
+            return counts.most_common(1)[0][0]
+
+        c_values = sorted({runs["DFR", seed]["dfr_c"] for seed in SEEDS}, key=float)
+        row = {
+            "arquitetura": architecture,
+            "n_sementes": erm["n"],
+            "erm_pior_grupo_pct": erm["worst_group_accuracy_pct_mean"],
+            "erm_pior_grupo_desvio_pp": erm["worst_group_accuracy_pct_sd"],
+            "erm_media_ponderada_pct": erm["weighted_accuracy_pct_mean"],
+            "erm_media_ponderada_desvio_pp": erm["weighted_accuracy_pct_sd"],
+            "erm_micro_pct": erm["micro_accuracy_pct_mean"],
+            "erm_micro_desvio_pp": erm["micro_accuracy_pct_sd"],
+            "erm_gap_pp": erm["group_gap_pp_mean"],
+            "dfr_pior_grupo_pct": dfr["worst_group_accuracy_pct_mean"],
+            "dfr_pior_grupo_desvio_pp": dfr["worst_group_accuracy_pct_sd"],
+            "dfr_media_ponderada_pct": dfr["weighted_accuracy_pct_mean"],
+            "dfr_media_ponderada_desvio_pp": dfr["weighted_accuracy_pct_sd"],
+            "dfr_micro_pct": dfr["micro_accuracy_pct_mean"],
+            "dfr_micro_desvio_pp": dfr["micro_accuracy_pct_sd"],
+            "dfr_gap_pp": dfr["group_gap_pp_mean"],
+            "delta_pior_grupo_pp": delta["delta_worst_group_mean_pp"],
+            "delta_pior_grupo_desvio_pp": delta["delta_worst_group_sd_pp"],
+            "delta_pior_grupo_ic95_pp": delta["delta_worst_group_ci95_pp"],
+            "delta_media_ponderada_pp": delta["delta_weighted_mean_pp"],
+            "delta_micro_pp": delta["delta_micro_mean_pp"],
+            "erm_grupo_pior_predominante": worst_group("ERM"),
+            "dfr_grupo_pior_predominante": worst_group("DFR"),
+            "dfr_c_valores": " | ".join(c_values),
+        }
+        for i in range(4):
+            row[f"acuracia_g{i}_erm"] = erm[f"g{i}_accuracy_pct_mean"]
+            row[f"acuracia_g{i}_dfr"] = dfr[f"g{i}_accuracy_pct_mean"]
+        wide.append(row)
+    return wide
+
+
+def summary_rows_pt(architectures, summaries, delta_rows, complete):
+    """Tabela final em formato longo: uma linha por arquitetura e método."""
+    index = {(row["architecture"], row["method"]): row for row in summaries}
+    out = []
+    for architecture in architectures:
+        delta = delta_rows[architecture]["summary"]
+        runs = complete[architecture]
+        for method in METHODS:
+            entry = index[architecture, method]
+            groups = [float(entry[f"g{i}_accuracy_pct_mean"]) for i in range(4)]
+            counts = Counter(
+                GROUPS[min(range(4), key=lambda i: float(runs[method, seed][f"g{i}_accuracy_pct"]))]
+                for seed in SEEDS)
+            row = {
+                "arquitetura": architecture,
+                "metodo": method,
+                "n_sementes": entry["n"],
+                "pior_grupo_pct": entry["worst_group_accuracy_pct_mean"],
+                "pior_grupo_desvio_pp": entry["worst_group_accuracy_pct_sd"],
+                "pior_grupo_ic95_pp": entry["worst_group_accuracy_pct_ci95_pp"],
+                "media_ponderada_pct": entry["weighted_accuracy_pct_mean"],
+                "media_ponderada_desvio_pp": entry["weighted_accuracy_pct_sd"],
+                "micro_pct": entry["micro_accuracy_pct_mean"],
+                "micro_desvio_pp": entry["micro_accuracy_pct_sd"],
+                "gap_pp": entry["group_gap_pp_mean"],
+                "grupo_pior_predominante": counts.most_common(1)[0][0],
+            }
+            if method == "DFR":
+                row.update({
+                    "delta_pior_grupo_pp": delta["delta_worst_group_mean_pp"],
+                    "delta_pior_grupo_desvio_pp": delta["delta_worst_group_sd_pp"],
+                    "delta_pior_grupo_ic95_pp": delta["delta_worst_group_ci95_pp"],
+                    "delta_media_ponderada_pp": delta["delta_weighted_mean_pp"],
+                    "delta_micro_pp": delta["delta_micro_mean_pp"],
+                    "dfr_c_valores": " | ".join(
+                        sorted({runs["DFR", seed]["dfr_c"] for seed in SEEDS}, key=float)),
+                })
+            else:
+                row.update({key: "" for key in (
+                    "delta_pior_grupo_pp", "delta_pior_grupo_desvio_pp",
+                    "delta_pior_grupo_ic95_pp", "delta_media_ponderada_pp",
+                    "delta_micro_pp", "dfr_c_valores")})
+            out.append(row)
+    return out
+
+
+def per_seed_rows(rows):
+    """Detalhe por semente, com nomes de coluna em português."""
+    out = []
+    for row in sorted(rows, key=lambda r: (r["architecture"], int(r["seed"]), r["method"])):
+        groups = [float(row[f"g{i}_accuracy_pct"]) for i in range(4)]
+        out.append({
+            "arquitetura": row["architecture"],
+            "semente": row["seed"],
+            "metodo": row["method"],
+            "pior_grupo_pct": row["worst_group_accuracy_pct"],
+            "grupo_pior": GROUPS[min(range(4), key=lambda i: groups[i])],
+            "media_ponderada_pct": row["weighted_accuracy_pct"],
+            "micro_pct": row["micro_accuracy_pct"],
+            "gap_pp": row["group_gap_pp"],
+            "acuracia_g0_pct": row["g0_accuracy_pct"],
+            "acuracia_g1_pct": row["g1_accuracy_pct"],
+            "acuracia_g2_pct": row["g2_accuracy_pct"],
+            "acuracia_g3_pct": row["g3_accuracy_pct"],
+            "dfr_c": row["dfr_c"],
+        })
+    return out
+
+
 def markdown_table(architectures, summaries, delta_rows):
     lines = [
         "| Arquitetura | Método | Pior grupo (%) | Média ponderada (%) | Grupo pior |",
@@ -174,6 +292,11 @@ def main():
               [row for architecture in architectures for row in delta_rows[architecture]["rows"]])
     write_csv(args.output / "deltas_summary.csv",
               [delta_rows[architecture]["summary"] for architecture in architectures])
+    write_csv(args.output / "resultados_resumo.csv",
+              summary_rows_pt(architectures, summaries, delta_rows, complete))
+    write_csv(args.output / "resultados_completos.csv",
+              wide_rows(architectures, summaries, delta_rows, complete))
+    write_csv(args.output / "resultados_por_semente.csv", per_seed_rows(rows))
     table = markdown_table(architectures, summaries, delta_rows)
     (args.output / "resumo.md").write_text(table, encoding="utf-8")
     print(table)
