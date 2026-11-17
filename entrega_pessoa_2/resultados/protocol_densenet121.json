@@ -1,0 +1,48 @@
+{
+  "architecture": "densenet121",
+  "cuda": "12.8",
+  "dependencies": {
+    "numpy": "1.26.4",
+    "pandas": "2.2.3",
+    "pillow": "11.0.0",
+    "scikit-learn": "1.5.2",
+    "tensorboard": "2.18.0",
+    "torch": "2.11.0+cu128",
+    "torchvision": "0.26.0+cu128"
+  },
+  "gpu": "NVIDIA GeForce RTX 5070",
+  "group_counts": {
+    "test": [
+      2255,
+      2255,
+      642,
+      642
+    ],
+    "train": [
+      3498,
+      184,
+      56,
+      1057
+    ],
+    "val": [
+      467,
+      466,
+      133,
+      133
+    ]
+  },
+  "metadata_sha256": "2f023b9dc371f6fbb82c7cb810ff0f03e19c54c8055a2e37517ae7bb56644362",
+  "model_adapter_sha256": "0aa722f0a3751df3406fe99f8538cd3582596beba606733f8c7aef0ab471aca2",
+  "patch_sha256": "dc9b6ce94ea09903b4e29c61221451f096eff797fc0fe842d4c8d4bb728b695f",
+  "pretrained_weights": "DenseNet121_Weights.IMAGENET1K_V1",
+  "profile": "kirichenko-iclr2023-waterbirds-table2",
+  "python": "3.12.3",
+  "seeds": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "upstream_commit": "9d8d5de78feafb0ba99878b8a1f91c5cd942e62a"
+}

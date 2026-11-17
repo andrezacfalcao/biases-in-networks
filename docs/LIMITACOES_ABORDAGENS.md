@@ -218,10 +218,15 @@ interpretada como diferença entre arquiteturas.
    disso; a comparação final precisa conferir os manifestos antes de juntar os
    números.
 
-### 6.1 Evidência observada na ShuffleNet V2 ×0,5 (cinco sementes)
+### 6.1 Evidência observada nas quatro arquiteturas (cinco sementes)
 
-A ShuffleNet é o caso extremo de capacidade entre as quatro redes e ilustra
-quase todas as limitações acima:
+A comparação completa ilustra quase todas as limitações acima. Em todas as
+redes, o pior grupo no **treino** é muito maior que no **teste**: ~100% na
+MobileNet, EfficientNet e DenseNet (99,5–100%) e 89,3–94,6% na ShuffleNet,
+contra 35–79% no teste. O ERM ajusta os 56 exemplos minoritários do treino e
+não generaliza para os 642 do teste. O problema é o atalho, não a otimização.
+
+Na ShuffleNet V2 ×0,5:
 
 - ERM: pior grupo no teste **36,9 ± 1,2%**, média ponderada **95,3 ± 0,1%**.
   No treino, o pior grupo chega a **89,3–94,6%**. A rede praticamente decora os
@@ -239,8 +244,29 @@ quase todas as limitações acima:
   mas o checkpoint fixo da época 99 tem 36,1%. Na semente 2, a época 99 foi a
   melhor. A regra da última época adiciona variância, para melhor ou para pior.
 
-Esses números são de uma arquitetura; a comparação completa, com as quatro,
-está em [`entrega_pessoa_2/LEIA-ME.md`](../entrega_pessoa_2/LEIA-ME.md).
+Na MobileNetV3-Small, o mesmo padrão aparece com menos custo: ERM **41,8 ±
+2,1%** no pior grupo e **95,7 ± 0,1%** na média ponderada; DFR **82,7 ± 1,5%**
+no pior grupo e **85,0 ± 0,9%** na média. O ganho é **+40,9 ± 1,6 pontos** e o
+custo é **−10,7 ± 0,9 pontos**. O pior grupo do ERM também é sempre o 1_0; no
+DFR, passa a ser 0_0 ou 0_1. O `C` escolhido varia de 0,1 a 1,0.
+
+Na EfficientNet-B0, intermediária, o ERM já chega a **62,0 ± 1,5%** no pior
+grupo e **96,7 ± 0,1%** na média ponderada. O DFR sobe para **85,2 ± 0,3%** e
+**90,3 ± 0,5%**: ganho de **+23,1 ± 1,3 pontos** no pior grupo com custo de
+apenas **−6,4 ± 0,5 pontos** na média. O `C` varia de 0,3 a 1,0 e o pior grupo
+do DFR é sempre 0_1. A rede maior precisa de menos “conserto” e paga menos por
+ele; a receita comum, portanto, não é neutra em relação à capacidade.
+
+Na DenseNet-121, a maior das quatro, o ERM chega a **73,8 ± 2,9%** no pior grupo
+e **97,7 ± 0,1%** na média; o DFR vai a **92,2 ± 0,5%** e **93,8 ± 0,3%**. O
+ganho é **+18,4 ± 3,0 pontos** e o custo é **−3,9 ± 0,3 pontos** — praticamente
+o mesmo trade-off da ResNet-50 no artigo (−3,9). O `C` varia de 0,3 a 1,0 e o
+pior grupo do DFR é 0_1 em quatro das cinco sementes. Quanto maior a rede, menor
+o ganho relativo do DFR e menor o custo; o teto do ganho é a representação que o
+ERM já aprendeu.
+
+A comparação completa, com as tabelas e a figura, está em
+[`entrega_pessoa_2/LEIA-ME.md`](../entrega_pessoa_2/LEIA-ME.md).
 
 ## 7. Limitações específicas do piloto em `results/`
 
