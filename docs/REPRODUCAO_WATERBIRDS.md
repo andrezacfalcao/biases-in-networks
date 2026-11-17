@@ -30,6 +30,15 @@ O runner extrai os arquivos do [commit fixado dos autores](https://github.com/Po
 
 Extraia a versão 1.0 da [base pública](https://github.com/kohpangwei/group_DRO#waterbirds) em `data/waterbirds_v1.0/` ou informe `--data /caminho/waterbirds`. A pasta deve conter `metadata.csv` e as imagens que ele referencia. Use o ambiente Linux com GPU NVIDIA e driver compatível com CUDA 12.4; o primeiro treino precisa de acesso aos pesos do ImageNet.
 
+Nesta execução, o host de Stanford não respondeu e o arquivo foi obtido do
+espelho do próprio autor no Hugging Face
+(`https://huggingface.co/datasets/pangwei/wilds-waterbirds/resolve/main/waterbirds_v1.0.tar.gz`,
+SHA-256 `395444bbd7ca02036173877d72f9e818031e577d44b79e0fda7794c5e0072cc4`).
+O `check` confere o SHA-256 do `metadata.csv`
+(`2f023b9dc371f6fbb82c7cb810ff0f03e19c54c8055a2e37517ae7bb56644362`) e as
+contagens oficiais dos quatro grupos, então a origem do arquivo não altera as
+divisões usadas.
+
 Na raiz do projeto, em um ambiente Python 3.11 ou 3.12 novo:
 
 ```sh
@@ -45,6 +54,16 @@ python -m reproduction run --architecture resnet50
 Se já tiver o repositório dos autores, omita o `git clone` e use `--upstream /caminho/para/o/clone` nos comandos. O perfil padrão roda as sementes 1–5 sequencialmente. Para executar por sessões, acrescente `--seed 1` (ou outro número de 1 a 5) no mesmo ambiente e preserve `runs/` em armazenamento persistente. Não execute dois comandos da mesma arquitetura na mesma pasta de saída ao mesmo tempo. O runner reaproveita sementes concluídas e gera o resumo somente quando as cinco existem.
 
 Com o ambiente instalado, `python -m tests.smoke_waterbirds` roda um teste opcional de integração em CPU com 96 imagens reais, uma época e pesos aleatórios. Ele verifica a execução de ERM e DFR sem gerar resultados da reprodução.
+
+### Ambiente usado na execução da Pessoa 2
+
+A GPU RTX 5070 é Blackwell (compute capability 12.0) e não é atendida pelas
+builds `cu124` do PyTorch 2.5.1. Nesta execução usamos `torch 2.11.0+cu128` e
+`torchvision 0.26.0`, mantendo o mesmo código, as mesmas divisões, os mesmos
+pesos ImageNet-1K V1, os mesmos hiperparâmetros e as mesmas sementes. As versões
+efetivas ficam registradas em `runs/<arquitetura>/protocol.json`. Ao comparar
+com a ResNet-50 da Pessoa 1, registre a diferença de versões e de hardware; ela
+não é uma variável controlada do experimento.
 
 ## Evidência esperada
 
