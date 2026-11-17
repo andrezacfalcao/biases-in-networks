@@ -63,7 +63,7 @@ G1 e G2 são os grupos minoritários **no treino**. O caso mais raro é o G2, co
 
 **No artigo**, o DFR ganha **18,0 pontos percentuais** no pior grupo e perde **3,9 pontos** na média ponderada em relação ao ERM. Isso ilustra por que vale olhar para as duas métricas. **Na nossa reprodução**, será preciso verificar se a mesma tendência aparece, identificar o grupo que mais mudou e relatar as diferenças em relação à referência. O DFR usa rótulos de grupo na validação; além disso, avaliar o comportamento em um único dataset não estabelece que ele se repetirá em outros problemas.
 
-Para a entrega, usaremos `protocol.json` (dados, versões e configuração), `results.csv` (uma linha por método e semente), `summary.csv` (média e desvio padrão) e `paper_comparison.csv` (medido versus publicado). A Pessoa 2 recebe esses arquivos da ResNet-50 para unir aos resultados de DenseNet-121, EfficientNet-B0, ConvNeXt-Tiny e ViT-B/16.
+Para a entrega, usaremos `protocol.json` (dados, versões e configuração), `results.csv` (uma linha por método e semente), `summary.csv` (média e desvio padrão) e `paper_comparison.csv` (medido versus publicado). A Pessoa 2 recebe esses arquivos da ResNet-50 para unir aos resultados das [quatro arquiteturas leves](../docs/ENTREGA_PESSOA_2.md).
 
 ## Texto pronto para um slide
 

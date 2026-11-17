@@ -16,7 +16,8 @@ from .metrics import REFERENCE, read_metadata, result_rows, summarize, write_csv
 
 HERE = Path(__file__).resolve().parent
 UPSTREAM = "9d8d5de78feafb0ba99878b8a1f91c5cd942e62a"
-ARCHITECTURES = ("resnet50", "densenet121", "efficientnet_b0", "convnext_tiny", "vit_b_16")
+ARCHITECTURES = ("resnet50", "densenet121", "efficientnet_b0", "convnext_tiny", "vit_b_16",
+                 "shufflenet_v2_x0_5", "mobilenet_v3_small", "mnasnet0_5")
 SEEDS = (1, 2, 3, 4, 5)
 UPSTREAM_FILES = ("LICENSE", "train_classifier.py", "dfr_evaluate_spurious.py", "wb_data.py", "utils.py")
 

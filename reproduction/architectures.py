@@ -11,6 +11,9 @@ MODEL_SPECS = {
     "efficientnet_b0": (models.efficientnet_b0, models.EfficientNet_B0_Weights.IMAGENET1K_V1, ("classifier", "1")),
     "convnext_tiny": (models.convnext_tiny, models.ConvNeXt_Tiny_Weights.IMAGENET1K_V1, ("classifier", "2")),
     "vit_b_16": (models.vit_b_16, models.ViT_B_16_Weights.IMAGENET1K_V1, ("heads", "head")),
+    "shufflenet_v2_x0_5": (models.shufflenet_v2_x0_5, models.ShuffleNet_V2_X0_5_Weights.IMAGENET1K_V1, ("fc",)),
+    "mobilenet_v3_small": (models.mobilenet_v3_small, models.MobileNet_V3_Small_Weights.IMAGENET1K_V1, ("classifier", "3")),
+    "mnasnet0_5": (models.mnasnet0_5, models.MNASNet0_5_Weights.IMAGENET1K_V1, ("classifier", "1")),
 }
 
 
