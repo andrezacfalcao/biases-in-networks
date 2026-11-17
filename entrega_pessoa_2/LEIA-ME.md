@@ -26,6 +26,9 @@ maior acurácia no pior grupo, e em qual delas o DFR mais melhora essa métrica?
   protocolo não roda nessa GPU; a diferença está registrada nos manifestos.
 - **EfficientNet-B0:** não havia execução anterior com este protocolo neste
   projeto nem no restante de `/Documents`; foi treinada do zero.
+- **Confirmação inicial:** a primeira execução foi a ShuffleNet V2 ×0,5 com a
+  semente 1, para verificar que o ERM e o DFR terminavam e produziam as métricas.
+  Só depois as cinco sementes foram executadas nas quatro redes.
 
 ## Resultados
 
@@ -155,6 +158,19 @@ fica completa quando a Pessoa 1 entregar `protocol.json`, `results.csv`,
 `summary.csv` e `paper_comparison.csv` da ResNet-50. O `paper_comparison.csv`
 deste projeto só é gerado para `resnet50`; para as outras quatro, a comparação
 é interna.
+
+Para incorporar a ResNet-50 quando ela chegar, copie `runs/resnet50/` para este
+clone e rode novamente:
+
+```sh
+python scripts/aggregate_results.py --output entrega_pessoa_2/resultados
+python scripts/plot_person2_results.py \
+  --summary entrega_pessoa_2/resultados/summary_all.csv \
+  --output entrega_pessoa_2/resultados/comparacao.png
+```
+
+O agregador e a figura incluem automaticamente qualquer arquitetura que tenha
+ERM e DFR nas cinco sementes; nenhuma mudança de código é necessária.
 
 ## Limitações
 
