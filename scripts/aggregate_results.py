@@ -109,12 +109,38 @@ def delta_summary(architecture, rows):
     }
 
 
+NUMERIC_PT = {
+    "n_sementes", "pior_grupo_pct", "pior_grupo_desvio_pp", "pior_grupo_ic95_pp",
+    "media_ponderada_pct", "media_ponderada_desvio_pp", "micro_pct",
+    "micro_desvio_pp", "gap_pp", "delta_pior_grupo_pp",
+    "delta_pior_grupo_desvio_pp", "delta_pior_grupo_ic95_pp",
+    "delta_media_ponderada_pp", "delta_micro_pp",
+}
+
+
 def write_csv(path, rows):
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
         writer.writeheader()
         writer.writerows(rows)
+
+
+def write_excel_csv(path, rows):
+    """CSV para Excel em português: separador ';', decimal com vírgula, BOM."""
+    with path.open("w", newline="", encoding="utf-8-sig") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(rows[0]), delimiter=";")
+        writer.writeheader()
+        for row in rows:
+            out = {}
+            for key, value in row.items():
+                if key in NUMERIC_PT and value != "":
+                    out[key] = str(value).replace(".", ",")
+                elif key == "dfr_c_valores" and value:
+                    out[key] = value.replace(".", ",")
+                else:
+                    out[key] = value
+            writer.writerow(out)
 
 
 def wide_rows(architectures, summaries, delta_rows, complete):
@@ -292,8 +318,9 @@ def main():
               [row for architecture in architectures for row in delta_rows[architecture]["rows"]])
     write_csv(args.output / "deltas_summary.csv",
               [delta_rows[architecture]["summary"] for architecture in architectures])
-    write_csv(args.output / "resultados_resumo.csv",
-              summary_rows_pt(architectures, summaries, delta_rows, complete))
+    resumo_pt = summary_rows_pt(architectures, summaries, delta_rows, complete)
+    write_csv(args.output / "resultados_resumo.csv", resumo_pt)
+    write_excel_csv(args.output / "resultados_resumo_excel.csv", resumo_pt)
     write_csv(args.output / "resultados_completos.csv",
               wide_rows(architectures, summaries, delta_rows, complete))
     write_csv(args.output / "resultados_por_semente.csv", per_seed_rows(rows))

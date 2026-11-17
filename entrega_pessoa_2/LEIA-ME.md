@@ -212,6 +212,7 @@ python scripts/plot_person2_results.py \
 Arquivos desta entrega:
 
 - `resultados/resultados_resumo.csv`: **tabela final**, uma linha por arquitetura e método (8 linhas), com pior grupo, média ponderada, micro, gap, grupo pior e efeito do DFR.
+- `resultados/resultados_resumo_excel.csv`: a mesma tabela com separador `;` e decimal com vírgula, para abrir direto no Excel em português.
 - `resultados/resultados_completos.csv`: ERM e DFR lado a lado, uma linha por arquitetura (4 linhas, 32 colunas).
 - `resultados/resultados_por_semente.csv`: detalhe das 40 execuções (4 arquiteturas × 2 métodos × 5 sementes).
 - `resultados/results_all.csv`: a mesma base em formato longo, com nomes de coluna em inglês.
