@@ -1,8 +1,8 @@
 """Agrega runs/<arquitetura>/results.csv e calcula o efeito do DFR por semente.
 
 Uso:
-    python scripts/aggregate_results.py
-    python scripts/aggregate_results.py --runs runs --output runs/aggregate
+    python scripts/passo2/aggregate_results.py
+    python scripts/passo2/aggregate_results.py --runs runs --output runs/aggregate
 
 Gera summary_all.csv, deltas.csv e deltas_summary.csv. Arquiteturas sem os dois
 métodos nas cinco sementes são ignoradas com aviso; o protocolo não permite
@@ -325,7 +325,7 @@ def main():
               wide_rows(architectures, summaries, delta_rows, complete))
     write_csv(args.output / "resultados_por_semente.csv", per_seed_rows(rows))
     table = markdown_table(architectures, summaries, delta_rows)
-    (args.output / "resumo.md").write_text(table, encoding="utf-8")
+    (args.output / "resumo.txt").write_text(table, encoding="utf-8")
     print(table)
 
 

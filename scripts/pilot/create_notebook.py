@@ -612,7 +612,7 @@ notebook_dict = {
     "nbformat_minor": 4
 }
 
-out_nb_path = "waterbirds_bias_reduction.ipynb"
+out_nb_path = "notebooks/00_piloto_waterbirds.ipynb"
 with open(out_nb_path, "w", encoding="utf-8") as f:
     json.dump(notebook_dict, f, indent=2, ensure_ascii=False)
 

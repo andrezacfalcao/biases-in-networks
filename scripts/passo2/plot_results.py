@@ -1,4 +1,4 @@
-"""Gera a figura de comparação ERM × DFR a partir de runs/aggregate/summary_all.csv."""
+"""Gera a figura de comparação ERM × DFR a partir de runs/aggregate/summary_all.csv (ou results/passo2/summary_all.csv)."""
 import argparse
 import csv
 from pathlib import Path

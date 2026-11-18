@@ -933,7 +933,7 @@ def create_deck():
         "Slide de referências bibliográficas auditadas. Todos os artigos listados foram diretamente citados e utilizados "
         "no embasamento teórico, na formulação das hipóteses e na execução do código do nosso trabalho.")
 
-    out_pptx = "seminario_vies_redes_neurais.pptx"
+    out_pptx = "docs/seminario_vies_redes_neurais.pptx"
     prs.save(out_pptx)
     print(f"Apresentação com prova do Baseline ERM e comparação com DFR gerada em: {out_pptx}")
 
