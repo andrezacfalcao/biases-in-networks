@@ -3,8 +3,8 @@
 Em Waterbirds, o fundo de água ou terra está associado à classe da ave no treino. O projeto mede quanto essa associação prejudica os quatro grupos no teste e verifica se retreinar a última camada com **Deep Feature Reweighting (DFR)** melhora a acurácia do pior grupo.
 
 - **Pessoa 1:** reproduzir ERM e DFR com ResNet-50 no Waterbirds, conforme a Tabela 2 de [Kirichenko et al., ICLR 2023](https://openreview.net/pdf/f0a7c2996eab5d56791cb5d7feebe23aa9ca27c4.pdf). Comece pelo [protocolo de reprodução](docs/REPRODUCAO_WATERBIRDS.md).
-- **Pessoa 2:** executar o mesmo protocolo nas outras quatro arquiteturas e comparar os resultados. Comece pela [entrega para a Pessoa 2](docs/ENTREGA_PESSOA_2.md).
-- **Estado:** o pipeline e o formato dos resultados estão no repositório. A confirmação numérica exige executar as cinco sementes em GPU NVIDIA/CUDA. Consulte a pasta `runs/` da execução para obter os resultados. As referências publicadas e os números do piloto não são resultados da reprodução.
+- **Pessoa 2:** executar o mesmo protocolo em ShuffleNet V2 ×0,5, MobileNetV3-Small, EfficientNet-B0 e DenseNet-121, e comparar os resultados com a ResNet-50. Comece pela [entrega para a Pessoa 2](docs/ENTREGA_PESSOA_2.md); os resultados medidos estão no [relatório da Pessoa 2](entrega_pessoa_2/LEIA-ME.md).
+- **Estado:** as quatro arquiteturas da Pessoa 2 têm resultados de cinco sementes (ERM e DFR) no [relatório da Pessoa 2](entrega_pessoa_2/LEIA-ME.md), com CSVs em `entrega_pessoa_2/resultados/`. A ResNet-50 da Pessoa 1 ainda depende da execução dela. Consulte `runs/` para logs e checkpoints. As referências publicadas e os números do piloto não são resultados da reprodução.
 
 ## Verificar a preparação
 
