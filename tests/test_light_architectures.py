@@ -3,7 +3,7 @@ import sys
 import unittest
 from pathlib import Path
 
-LIGHT_MODELS = ("shufflenet_v2_x0_5", "mobilenet_v3_small", "mnasnet0_5", "efficientnet_b0")
+LIGHT_MODELS = ("shufflenet_v2_x0_5", "mobilenet_v3_small", "efficientnet_b0", "densenet121")
 ROOT = Path(__file__).resolve().parents[1]
 
 try:

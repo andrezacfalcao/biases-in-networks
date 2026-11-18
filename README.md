@@ -7,7 +7,7 @@ Seminário de Redes Neurais Profundas.
 No Waterbirds, o fundo (água ou terra) está associado à classe da ave no treino. Uma rede treinada com ERM aprende esse atalho: acerta ~98% na média ponderada, mas só ~73% no pior grupo (ave aquática em terra). O projeto reproduz o artigo [Kirichenko et al., *Last Layer Re-Training is Sufficient for Robustness to Spurious Correlations* (ICLR 2023)](https://arxiv.org/abs/2204.02937), que mostra que **retreinar só a última camada** (DFR) em dados balanceados por grupo recupera a robustez.
 
 - **Passo 1: reprodução.** ERM e DFR com ResNet-50 (linhas Base e DFR da Tabela 2, coluna Waterbirds), 100 épocas, cinco sementes, código dos autores em commit fixado.
-- **Passo 2: extensão.** O mesmo protocolo em arquiteturas menores (ShuffleNetV2 ×0,5, MobileNetV3-Small, MNASNet 0.5, EfficientNet-B0, DenseNet-121) para ver se o DFR também ajuda em modelos compactos.
+- **Passo 2: extensão.** O mesmo protocolo em arquiteturas menores (ShuffleNetV2 ×0,5, MobileNetV3-Small, EfficientNet-B0, DenseNet-121) para ver se o DFR também ajuda em modelos compactos.
 - **Piloto** (exploratório, anterior): ResNet-50 congelada, uma semente, Grad-CAM. Não faz parte dos resultados finais.
 
 Resultados, metodologia, discussão e referências: **[RELATORIO_COMPLETO_PROJETO.md](RELATORIO_COMPLETO_PROJETO.md)**. Artigo em LaTeX: [`overleaf/`](overleaf/).
@@ -57,7 +57,7 @@ python -m reproduction run --architecture shufflenet_v2_x0_5 --seed 1 # Passo 2:
 
 Para consolidar o Passo 2 depois das execuções: `python scripts/passo2/aggregate_results.py --output results/passo2` e `python scripts/passo2/plot_results.py --summary results/passo2/summary_all.csv --output results/passo2/comparacao.png`.
 
-Arquiteturas: `resnet50`, `densenet121`, `efficientnet_b0`, `mobilenet_v3_small`, `mnasnet0_5`, `shufflenet_v2_x0_5`. Sem `--seed` rodam as sementes 1 a 5; sementes concluídas são reaproveitadas. As saídas ficam em `runs/<arquitetura>/` (`protocol.json`, `results.csv`, `summary.csv`, `paper_comparison.csv`, `seed-*/`).
+Arquiteturas: `resnet50`, `densenet121`, `efficientnet_b0`, `mobilenet_v3_small`, `shufflenet_v2_x0_5`. Sem `--seed` rodam as sementes 1 a 5; sementes concluídas são reaproveitadas. As saídas ficam em `runs/<arquitetura>/` (`protocol.json`, `results.csv`, `summary.csv`, `paper_comparison.csv`, `seed-*/`).
 
 ### Testes
 
